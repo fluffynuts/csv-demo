@@ -1,17 +1,24 @@
 const
+  crypto = require("crypto"),
   fs = require("fs"),
   csv = require("csv"),
   yargs = require("yargs");
 
 async function isFile(p) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     fs.stat(p, (err, data) => {
       if (err) {
         return resolve(false);
       }
-      return resolve(data.isFile());
+      return resolve(data && data.isFile());
     });
   });
+}
+
+function createKey(key, data) {
+  return crypto.createHmac("sha256", key)
+    .update(data)
+    .digest("hex");
 }
 
 function gatherArgs() {
@@ -29,6 +36,11 @@ function gatherArgs() {
     alias: "s",
     type: "string",
     description: "client secret",
+    required: true
+  }).option("client-id", {
+    alias: "c",
+    type: "string",
+    description: "the id of the client",
     required: true
   }).option("overwrite", {
     type: "boolean",
@@ -66,8 +78,9 @@ function performProcessing(
           })
       ).pipe(
         csv.stringify()
-      ).pipe(fs.createWriteStream(outputFile, { encoding: "utf8", flags }))
-      .on("end", resolve)
+      ).pipe(
+        fs.createWriteStream(outputFile, { encoding: "utf8", flags })
+      ).on("end", resolve)
       .on("error", reject);
   });
 }
