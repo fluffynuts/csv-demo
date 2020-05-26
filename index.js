@@ -1,5 +1,5 @@
 const
-  crypto = require("crypto"),
+  transform = require("./transform").transform,
   fs = require("fs"),
   csv = require("csv"),
   yargs = require("yargs");
@@ -13,12 +13,6 @@ async function isFile(p) {
       return resolve(data && data.isFile());
     });
   });
-}
-
-function createKey(key, data) {
-  return crypto.createHmac("sha256", key)
-    .update(data)
-    .digest("hex");
 }
 
 function gatherArgs() {
@@ -65,6 +59,7 @@ function performProcessing(
   inputFile,
   outputFile,
   secret,
+  clientId,
   overwrite) {
   return new Promise(async (resolve, reject) => {
     const flags = overwrite ? "w" : "a";
@@ -72,10 +67,8 @@ function performProcessing(
       .pipe(csv.parse())
       .pipe(
         csv.transform(
-          record => {
-            // more complex logic should go here
-            return record.concat([secret]);
-          })
+          record => transform(record, clientId, secret)
+        )
       ).pipe(
         csv.stringify()
       ).pipe(
@@ -94,6 +87,7 @@ function performProcessing(
       args.input,
       args.output,
       args.secret,
+      args.clientId,
       args.overwrite
     );
     process.exit(0);

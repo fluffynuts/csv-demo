@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node stream.js"
+    "start": "node index.js",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +15,13 @@
     "yargs": "^15.3.1"
   },
   "devDependencies": {
-    "jest": "^26.0.1"
+    "@types/faker": "^4.1.12",
+    "@types/jest": "^25.2.3",
+    "@types/uuid": "^8.0.0",
+    "expect-more-jest": "^5.1.0",
+    "faker": "^4.1.0",
+    "jest": "^26.0.1",
+    "urijs": "^1.19.2",
+    "uuid": "^8.1.0"
   }
 }
