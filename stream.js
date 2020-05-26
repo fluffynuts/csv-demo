@@ -14,17 +14,6 @@ async function isFile(p) {
   });
 }
 
-async function fileSize(p) {
-  return new Promise((resolve, reject) => {
-    fs.stat(p, (err, data) => {
-      if (err) {
-        return resolve(0);
-      }
-      return resolve(data.size);
-    });
-  });
-}
-
 function gatherArgs() {
   return yargs.option("input", {
     alias: "i",
