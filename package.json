@@ -1,0 +1,16 @@
+{
+  "name": "csvstuff",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node stream.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv": "^5.3.2",
+    "yargs": "^15.3.1"
+  }
+}
