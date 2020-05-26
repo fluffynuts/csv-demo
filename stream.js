@@ -14,6 +14,17 @@ async function isFile(p) {
   });
 }
 
+async function fileSize(p) {
+  return new Promise((resolve, reject) => {
+    fs.stat(p, (err, data) => {
+      if (err) {
+        return resolve(0);
+      }
+      return resolve(data.size);
+    });
+  });
+}
+
 function gatherArgs() {
   return yargs.option("input", {
     alias: "i",
@@ -30,9 +41,10 @@ function gatherArgs() {
     type: "string",
     description: "client secret",
     required: true
-  }).option("force", {
-    alias: "f",
+  }).option("overwrite", {
     type: "boolean",
+  }).option("append", {
+    type: "boolean"
   }).help()
     .argv;
 }
@@ -42,8 +54,8 @@ async function validateArgs(args) {
     throw new Error(`input file not found: ${args.input}`);
   }
   if (await isFile(args.output)) {
-    if (!args.force) {
-      throw new Error(`output file already exists: ${args.output}\n(specify --force to overwrite)`);
+    if (!(args.overwrite || args.append)) {
+      throw new Error(`output file already exists: ${args.output}\n(specify --overwrite to overwrite or --append to append)`);
     }
   }
 }
@@ -51,8 +63,10 @@ async function validateArgs(args) {
 function performProcessing(
   inputFile,
   outputFile,
-  secret) {
-  return new Promise((resolve, reject) => {
+  secret,
+  overwrite) {
+  return new Promise(async (resolve, reject) => {
+    const flags = overwrite ? "w" : "a";
     fs.createReadStream(inputFile, { encoding: "utf8" })
       .pipe(csv.parse())
       .pipe(
@@ -63,7 +77,7 @@ function performProcessing(
           })
       ).pipe(
         csv.stringify()
-      ).pipe(fs.createWriteStream(outputFile))
+      ).pipe(fs.createWriteStream(outputFile, { encoding: "utf8", flags }))
       .on("end", resolve)
       .on("error", reject);
   });
@@ -74,7 +88,12 @@ function performProcessing(
     const
       args = gatherArgs();
     await validateArgs(args);
-    await performProcessing(args.input, args.output, args.secret);
+    await performProcessing(
+      args.input,
+      args.output,
+      args.secret,
+      args.overwrite
+    );
     process.exit(0);
   } catch (e) {
     console.error(`${e.message}\n`);
